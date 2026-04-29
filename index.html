@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Medication Reminder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background:
+                linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url("https://images.unsplash.com/photo-1584515933487-779824d29309");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            border: 6px solid rgba(255,255,255,0.6);
+            border-radius: 22px;
+            padding: 25px;
+            backdrop-filter: blur(4px);
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+            margin-bottom: 25px;
+            border: 3px solid #bbdefb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-top: 12px;
+            display: block;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid #999;
+            font-size: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+            font-size: 16px;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(13,110,253,0.5);
+        }
+
+        button:hover {
+            transform: scale(1.03);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 14px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .success { background: #d1e7dd; color: #0f5132; }
+        .warning { background: #fff3cd; color: #664d03; }
+        .danger  { background: #f8d7da; color: #842029; }
+
+        .info {
+            background: #f1f3f5;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-box {
+            background: rgba(250,250,250,0.95);
+            padding: 15px;
+            border-radius: 14px;
+            text-align: center;
+            border: 2px dashed #64b5f6;
+        }
+
+        .chart-box img {
+            max-width: 100%;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 13px;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+
+        @media(max-width: 900px) {
+            .grid, .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>💊 Smart Medication Reminder</h1>
+        <p>Machine Learning Based Healthcare Analytics</p>
+    </div>
+
+    <div class="card">
+        <form action="/predict" method="POST">
+            <div class="grid">
+                <div>
+                    <label>Age</label>
+                    <input type="number" name="age" required>
+
+                    <label>Gender</label>
+                    <select name="gender" required>
+                        <option value="">Select</option>
+                        {% for g in genders %}
+                        <option value="{{ g }}">{{ g }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Medication</label>
+                    <select name="medication" required>
+                        <option value="">Select</option>
+                        {% for m in medications %}
+                        <option value="{{ m }}">{{ m }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Chronic Condition</label>
+                    <select name="condition" required>
+                        <option value="">Select</option>
+                        {% for c in conditions %}
+                        <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Dosage (mg)</label>
+                    <input type="number" step="0.1" name="dosage" required>
+
+                    <label>Reminder Status</label>
+                    <select name="reminder_sent">
+                        <option value="1">Reminder Sent</option>
+                        <option value="0">Reminder Not Sent</option>
+                    </select>
+
+                    <button type="submit">Predict Risk</button>
+                </div>
+            </div>
+        </form>
+
+        {% if alert_msg %}
+        <div class="alert {{ alert_type }}">
+            {{ alert_msg }} <br>
+            Confidence: {{ confidence }}
+        </div>
+
+        <div class="info">
+            {{ reminder_msg }} <br>
+            ⏱ {{ time_now }}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if risk_chart %}
+    <div class="card">
+        <h3>📊 Health Analytics Visualization</h3>
+        <div class="charts">
+            <div class="chart-box">
+                <h4>Adherence Probability</h4>
+                <img src="data:image/png;base64,{{ risk_chart }}">
+            </div>
+            <div class="chart-box">
+                <h4>Why this matters</h4>
+                <p>
+                    This visualization helps healthcare providers identify patients
+                    at risk of missing medication and take preventive actions.
+                </p>
+                <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" width="120">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        Smart Medication Reminder | Flask + Machine Learning
+    </div>
+
+</div>
+</body>
+</html>
